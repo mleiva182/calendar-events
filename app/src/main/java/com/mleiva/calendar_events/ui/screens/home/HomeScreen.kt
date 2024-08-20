@@ -44,6 +44,7 @@ import com.kizitonwose.calendar.core.DayPosition
 import com.kizitonwose.calendar.core.yearMonth
 import com.mleiva.calendar_events.R
 import com.mleiva.calendar_events.ui.common.Screen
+import com.mleiva.calendar_events.ui.common.SpinnerDropdown
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -58,7 +59,7 @@ import java.time.YearMonth
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun HomeScreen(
-    onDayClick: (String) -> Unit,
+    onDayClick: (String, String) -> Unit,
     vm: HomeViewModel = viewModel()
 ) {
 
@@ -75,11 +76,10 @@ fun HomeScreen(
                     .fillMaxSize()
                     .padding(padding)
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(4.dp))
+                SpinnerDropdown(viewModel = vm)
 
                 calendario(viewModel = vm, onDayClick = onDayClick)
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
 
         }
@@ -89,7 +89,7 @@ fun HomeScreen(
 @Composable
 fun calendario(
     viewModel: HomeViewModel,
-    onDayClick: (String) -> Unit
+    onDayClick: (String, String) -> Unit
 ){
 
     val selectedDate by viewModel.selectedDate
@@ -138,7 +138,7 @@ fun calendario(
                     onDismissRequest = { isYearDropdownExpanded = false },
                     modifier = Modifier.width(100.dp)
                 ) {
-                    (currentMonth.year - 10..currentMonth.year + 10).forEach { year ->
+                    (currentMonth.year - 0..currentMonth.year + 0).forEach { year ->
                         DropdownMenuItem(
                             text = { Text(text = year.toString()) },
                             onClick = {
@@ -162,16 +162,19 @@ fun calendario(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+        val countryValue = viewModel.selectedItem.value.value
 
         HorizontalCalendar(
             state = calendarState,
             dayContent = { day ->
-                DayContent(day,
+                DayContent(
+                    countryValue,
+                    day,
                     selectedDate,
                     { clickedDate ->
                         viewModel.onDateSelected(clickedDate)
                     },
-                    { onDayClick(selectedDate.toString()) }
+                    { clickedDate, countryValue -> onDayClick(clickedDate, countryValue) }
                 )
             }
         )
@@ -180,12 +183,11 @@ fun calendario(
 }
 
 @Composable
-fun DayContent(day: CalendarDay, selectedDate: LocalDate?, onClick: (LocalDate) -> Unit, onDayClick: (String) -> Unit) {
+fun DayContent(country: String, day: CalendarDay, selectedDate: LocalDate?, onClick: (LocalDate) -> Unit, onDayClick: (String, String) -> Unit) {
     val isSelected = day.date == selectedDate
     val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
     val textColor = if (isSelected) Color.White else MaterialTheme.colorScheme.onBackground
 
-    println("DayContent: $selectedDate")
     Box(
         modifier = Modifier
             .aspectRatio(1f)
@@ -194,7 +196,7 @@ fun DayContent(day: CalendarDay, selectedDate: LocalDate?, onClick: (LocalDate) 
             .clickable(enabled = day.position == DayPosition.MonthDate) {
                 onClick(day.date)
                 onClick
-                onDayClick(selectedDate.toString())
+                onDayClick(day.date.toString(), country)
             },
         contentAlignment = Alignment.Center
     ) {

@@ -7,9 +7,9 @@ data class Venue(
     /*val _links: Links,
     val ada: Ada,
     val address: Address,
-    val city: City,
+    val city: City,*/
     val country: Country,
-    val dmas: List<Dma>,
+    /*val dmas: List<Dma>,
     val id: String,
     val locale: String,
     val location: Location,

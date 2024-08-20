@@ -1,9 +1,9 @@
-package com.mleiva.calendar_events.data
+package com.mleiva.calendar_events.data.remote
 
-import android.media.Image
 import com.mleiva.calendar_events.domain.Accessibility
 import com.mleiva.calendar_events.domain.AgeRestrictions
-import com.mleiva.calendar_events.domain.Embedded
+import com.mleiva.calendar_events.domain.Country
+import com.mleiva.calendar_events.domain.Dates
 import com.mleiva.calendar_events.domain.EmbeddedXX
 import com.mleiva.calendar_events.domain.ImageX
 import com.mleiva.calendar_events.domain.PriceRange
@@ -41,6 +41,7 @@ data class RemoteEvent(
     val ageRestrictions: AgeRestrictions? = null,
     val _embedded: EmbeddedXX? = null,
     val images: List<ImageX>? = null,
+    val dates: Dates? = null
 )
 
 

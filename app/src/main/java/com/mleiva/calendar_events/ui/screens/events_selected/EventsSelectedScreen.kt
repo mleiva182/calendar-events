@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -43,6 +46,7 @@ import com.mleiva.calendar_events.R
 import com.mleiva.calendar_events.domain.Event
 import com.mleiva.calendar_events.ui.common.Screen
 import com.mleiva.calendar_events.ui.screens.navigation.NavArgs
+import com.mleiva.calendar_events.use_cases.FetchEventsUseCase
 import kotlinx.coroutines.launch
 
 /***
@@ -54,23 +58,24 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventsSelectedScreen(
-    vm: EventsSelectedViewModel = viewModel(),
+    fetchEventsUseCase: FetchEventsUseCase,
     onBack: () -> Unit,
     backStackEntry: NavBackStackEntry
 ) {
-
     val selectedDate = backStackEntry.arguments?.getString(NavArgs.SelectedDate.key)
+    val country = backStackEntry.arguments?.getString(NavArgs.CountryCode.key)
+    val vm: EventsSelectedViewModel = viewModel(factory = EventsSelectedViewModel.MyViewModelFactory(
+        country = country!!,
+        localDate = selectedDate!!,
+        fetchEventsUseCase))
 
-    println("selectedDate $selectedDate")
-    // Usar `date` en tu UI
-
-    vm.onUiReady()
+    val state by vm.state.collectAsState()
 
     Screen {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(text = "Events") },
+                    title = { Text(text = "Events $country $selectedDate") },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
                             Icon(
@@ -87,13 +92,13 @@ fun EventsSelectedScreen(
                     .fillMaxSize()
             ) {
                 LazyVerticalGrid(
-                    columns = GridCells.Adaptive(120.dp),
+                    columns = GridCells.Adaptive(150.dp),
                     contentPadding = padding,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.padding(horizontal = 4.dp)
                 ) {
-                    items(vm.state.events, key = { it.id }) {
+                    items(state.events, key = { it.id }) {
                         EventItem(event = it, {})
                     }
                 }
@@ -131,9 +136,10 @@ fun EventItem(event: Event, onClick: () -> Unit) {
 
         Text(
             text = event.name,
-            style = MaterialTheme.typography.bodySmall,
-            maxLines = 1,
-            modifier = Modifier.padding(8.dp),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxHeight(),
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )

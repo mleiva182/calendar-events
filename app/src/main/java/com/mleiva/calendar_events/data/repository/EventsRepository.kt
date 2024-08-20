@@ -1,7 +1,9 @@
 package com.mleiva.calendar_events.data.repository
 
-import com.mleiva.calendar_events.data.EventsService
-import com.mleiva.calendar_events.data.RemoteEvent
+import com.mleiva.calendar_events.data.datasource.EventsLocalDataSource
+import com.mleiva.calendar_events.data.datasource.EventsServerDataSource
+import com.mleiva.calendar_events.data.remote.EventsService
+import com.mleiva.calendar_events.data.remote.RemoteEvent
 import com.mleiva.calendar_events.domain.Accessibility
 import com.mleiva.calendar_events.domain.AgeRestrictions
 import com.mleiva.calendar_events.domain.EmbeddedXX
@@ -12,6 +14,8 @@ import com.mleiva.calendar_events.domain.Seatmap
 import com.mleiva.calendar_events.domain.Venue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 
 /***
@@ -19,26 +23,23 @@ import kotlinx.coroutines.withContext
  * From: com.mleiva.calendar_events.data
  * Creted by: Marcelo Leiva on 15-08-2024 at 16:26
  ***/
-class EventsRepository(private val moviesService: EventsService) {
+class EventsRepository(
+    private val eventslocalDataSource: EventsLocalDataSource,
+    private val eventsServerDataSource: EventsServerDataSource
+) {
 
-    suspend fun fetchPopularEvents(startDateTime: String, endDateTime: String): List<Event> = withContext(Dispatchers.IO) {
-        moviesService.fetchEvents("US", startDateTime, endDateTime)
-            .Embedded.events
-            .map { it.toDomainModel() }
-    }
+    fun fetchEvents(country: String, startDateTime: String, endDateTime: String): Flow<List<Event>> = eventslocalDataSource.fetchEvents(country, startDateTime, endDateTime)
+        .onEach { localAnimes ->
+            if (localAnimes.isEmpty()) {
+                val remoteAnimes = eventsServerDataSource.fetchEvents(country, startDateTime, endDateTime)
+                eventslocalDataSource.insertEventIfCondition(remoteAnimes, "")
+            }else{
+                val remoteAnimes = eventsServerDataSource.fetchEvents(country, startDateTime, endDateTime)
+                remoteAnimes.forEach { remoteAnime ->
+                    eventslocalDataSource.insertEventIfCondition(remoteAnimes, remoteAnime.id)
+                }
+            }
 
-    private fun RemoteEvent.toDomainModel() = Event(
-        id = id,
-        name = name,
-        url = url,
-        locale = locale,
-        sales = sales,
-        info = info ?: "",
-        priceRanges = priceRanges ?: listOf(PriceRange("",0.0,0.0,"")),
-        seatmap = seatmap ?: Seatmap("", ""), // Asigna un valor por defecto si es null
-        accessibility = accessibility ?: Accessibility(""),
-        ageRestrictions = ageRestrictions ?: AgeRestrictions("", false),
-        _embedded = _embedded ?: EmbeddedXX(listOf(Venue(""))),
-        images = images ?: listOf(ImageX(false, 0, "", "", 0))
-    )
+        }
+
 }

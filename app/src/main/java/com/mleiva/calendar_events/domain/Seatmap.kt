@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Seatmap(
-    val id: String,
-    val staticUrl: String
+    val id: String = "",
+    val staticUrl: String = ""
 )

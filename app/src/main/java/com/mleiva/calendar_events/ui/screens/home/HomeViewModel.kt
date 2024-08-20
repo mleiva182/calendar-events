@@ -20,7 +20,7 @@ class HomeViewModel: ViewModel() {
     val currentMonth: State<YearMonth> = _currentMonth
 
     val minDate = LocalDate.now().minusMonths(1)
-    val maxDate = LocalDate.now().plusMonths(6)
+    val maxDate = LocalDate.now().plusMonths(1)
 
     fun onDateSelected(date: LocalDate) {
         if (date in minDate..maxDate) {
@@ -32,4 +32,20 @@ class HomeViewModel: ViewModel() {
         _currentMonth.value = yearMonth
     }
 
+    data class SpinnerItem(val displayName: String, val value: String)
+
+    val items = listOf(
+        SpinnerItem("UNITED STATES", "US"),
+        SpinnerItem("CANADA", "CA"),
+        SpinnerItem("MEXICO", "MX"),
+    )
+
+    // Estado para almacenar el elemento seleccionado
+    var selectedItem = mutableStateOf(items[0])
+        private set
+
+    // Función para actualizar el elemento seleccionado
+    fun onItemSelected(newItem: SpinnerItem) {
+        selectedItem.value = newItem
+    }
 }

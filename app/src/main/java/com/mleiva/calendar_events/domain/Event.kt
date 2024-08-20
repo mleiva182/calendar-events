@@ -15,6 +15,7 @@ data class Event(
     val ageRestrictions: AgeRestrictions,
     val _embedded: EmbeddedXX,
     val images: List<ImageX>,
+    val dates: Dates
     /*val _links: LinksXX,
     val classifications: List<ClassificationX>,
     val dates: Dates,

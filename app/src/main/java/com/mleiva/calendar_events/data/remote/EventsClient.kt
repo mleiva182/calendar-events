@@ -1,4 +1,4 @@
-package com.mleiva.calendar_events.data
+package com.mleiva.calendar_events.data.remote
 
 import com.mleiva.calendar_events.BuildConfig
 import kotlinx.serialization.json.Json
